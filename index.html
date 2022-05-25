@@ -152,128 +152,6 @@
           <div id="js-content" class="content-ll">
             
   
-    <article id="post-vue响应式原理" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2022/05/25/vue%E5%93%8D%E5%BA%94%E5%BC%8F%E5%8E%9F%E7%90%86/">vue响应式原理</a>
-    </h1>
-  
-
-        
-        <a href="/2022/05/25/vue%E5%93%8D%E5%BA%94%E5%BC%8F%E5%8E%9F%E7%90%86/" class="archive-article-date">
-  	<time datetime="2022-05-25T11:04:30.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-05-25</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="数据驱动"><a href="#数据驱动" class="headerlink" title="数据驱动"></a>数据驱动</h2><ul>
-<li>数据响应式、双向绑定、数据驱动</li>
-<li>数据响应式<ul>
-<li>数据模型仅仅是普通的 <code>JavaScript</code> 对象，而当我们修改数据时，视图会进行更新，避免了繁琐的 <code>DOM</code> 操作提高开发效率</li>
-</ul>
-</li>
-<li>双向绑定<ul>
-<li>数据改变，视图改变;视图改变，数据也随之改变</li>
-<li>我们可以使用 <code>v-model</code> 在表单元素上创建双向数据绑定</li>
-</ul>
-</li>
-<li>数据驱动是<code>Vue</code>最独特的特性之一，MVVM<code>表示的是</code>Model-View-<code>ViewModel</code><ul>
-<li>开发过程中仅需要关注数据本身，不需要关心数据是如何渲染到视图</li>
-<li>Model：模型层，负责处理业务逻辑以及和服务器端进行交互</li>
-<li>View：视图层：负责将数据模型转化为UI展示出来，可以简单的理解为HTML页面</li>
-<li><code>ViewModel</code>：视图模型层，用来连接Model和View，是Model和View之间的通信桥梁</li>
-</ul>
-</li>
-</ul>
-<h2 id="数据响应式的核心原理"><a href="#数据响应式的核心原理" class="headerlink" title="数据响应式的核心原理"></a>数据响应式的核心原理</h2><h3 id="Vue-2-x"><a href="#Vue-2-x" class="headerlink" title="Vue 2.x"></a>Vue 2.x</h3><blockquote>
-<p>核心是通过 ES5 的保护对象的 <code>Object.defindeProperty</code> 中的访问器属性中的 get 和 set 方法，data 中声明的属性都被添加了访问器属性，当读取 data 中的数据时自动调用 get 方法，当修改 data 中的数据时，自动调用 set 方法，检测到数据的变化，会通知观察者 Wacher，观察者 Wacher自动触发重新render 当前组件（子组件不会重新渲染）,生成新的虚拟 DOM 树，Vue 框架会遍历并对比新虚拟 DOM 树和旧虚拟 DOM 树中每个节点的差别，并记录下来，最后，加载操作，将所有记录的不同点，局部修改到真实 DOM树上</p>
-</blockquote>
-<p> <img src="/2022/05/25/vue%E5%93%8D%E5%BA%94%E5%BC%8F%E5%8E%9F%E7%90%86/Users/解瑞恒/Desktop/vue响应式原理/15.png"></p>
-<blockquote>
-<p>总结：Vue 采用数据劫持结合发布—订阅模式的方法，通过 <code>Object.defineProperty()</code> 来劫持各个属性的 setter，getter，在数据变动时发布消息给订阅者，触发相应的监听回调</p>
-</blockquote>
-<p><img src="/2022/05/25/vue%E5%93%8D%E5%BA%94%E5%BC%8F%E5%8E%9F%E7%90%86/Users/解瑞恒/Desktop/vue响应式原理/vue.jpeg"></p>
-<p><strong>Object.defineProperty()，那么它的用法是什么，以及优缺点是什么呢？</strong></p>
-<ul>
-<li>可以检测对象中数据发生的修改</li>
-<li>对于复杂的对象，层级很深的话，是不友好的，需要经行深度监听，这样子就需要递归到底，这也是它的缺点。</li>
-<li>对于一个对象中，如果你新增加属性，删除属性，**Object.defineProperty()**是不能观测到的，那么应该如何解决呢？可以通过<code>Vue.set()</code>和<code>Vue.delete()</code>来实现。</li>
-</ul>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 模拟 Vue 中的 data 选项 </span></span><br><span class="line"><span class="keyword">let</span> data = &#123;</span><br><span class="line">    <span class="attr">msg</span>: <span class="string">&#x27;hello&#x27;</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 模拟 Vue 的实例 </span></span><br><span class="line"><span class="keyword">let</span> vm = &#123;&#125;</span><br><span class="line"><span class="comment">// 数据劫持:当访问或者设置 vm 中的成员的时候，做一些干预操作</span></span><br><span class="line"><span class="title class_">Object</span>.<span class="title function_">defineProperty</span>(vm, <span class="string">&#x27;msg&#x27;</span>, &#123;</span><br><span class="line">  <span class="comment">// 可枚举(可遍历)</span></span><br><span class="line">  <span class="attr">enumerable</span>: <span class="literal">true</span>,</span><br><span class="line">  <span class="comment">// 可配置(可以使用 delete 删除，可以通过 defineProperty 重新定义) </span></span><br><span class="line">  <span class="attr">configurable</span>: <span class="literal">true</span>,</span><br><span class="line">  <span class="comment">// 当获取值的时候执行 </span></span><br><span class="line">  get () &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;get: &#x27;</span>, data.<span class="property">msg</span>)</span><br><span class="line">    <span class="keyword">return</span> data.<span class="property">msg</span> </span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="comment">// 当设置值的时候执行 </span></span><br><span class="line">  set (newValue) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;set: &#x27;</span>, newValue) </span><br><span class="line">    <span class="keyword">if</span> (newValue === data.<span class="property">msg</span>) &#123;</span><br><span class="line">      <span class="keyword">return</span></span><br><span class="line">    &#125;</span><br><span class="line">    data.<span class="property">msg</span> = newValue</span><br><span class="line">    <span class="comment">// 数据更改，更新 DOM 的值 </span></span><br><span class="line">    <span class="variable language_">document</span>.<span class="title function_">querySelector</span>(<span class="string">&#x27;#app&#x27;</span>).<span class="property">textContent</span> = data.<span class="property">msg</span></span><br><span class="line">  &#125; </span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 测试</span></span><br><span class="line">vm.<span class="property">msg</span> = <span class="string">&#x27;Hello World&#x27;</span> </span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(vm.<span class="property">msg</span>)</span><br></pre></td></tr></table></figure>
-
-<h3 id="Vue-3-x"><a href="#Vue-3-x" class="headerlink" title="Vue 3.x"></a>Vue 3.x</h3><blockquote>
-<p><code>Vue3.x</code>改用<code>Proxy</code>替代<code>Object.defineProperty</code>。因为<code>Proxy</code>可以直接监听<code>对象和数组</code>的变化，并且有多达13种拦截方法。并且作为新标准将受到浏览器厂商重点持续的性能优化。</p>
-</blockquote>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> data = [<span class="string">&#x27;a&#x27;</span>, <span class="string">&#x27;b&#x27;</span>, <span class="string">&#x27;c&#x27;</span>]</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> proxyData = <span class="keyword">new</span> <span class="title class_">Proxy</span>(data, &#123;</span><br><span class="line">    <span class="title function_">get</span>(<span class="params">target, key, receiver</span>) &#123;</span><br><span class="line">        <span class="comment">// 只处理本身（非原型的）属性</span></span><br><span class="line">        <span class="keyword">const</span> ownKeys = <span class="title class_">Reflect</span>.<span class="title function_">ownKeys</span>(target)</span><br><span class="line">        <span class="keyword">if</span> (ownKeys.<span class="title function_">includes</span>(key)) &#123;</span><br><span class="line">            <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;get&#x27;</span>, key) <span class="comment">// 监听</span></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">const</span> result = <span class="title class_">Reflect</span>.<span class="title function_">get</span>(target, key, receiver)</span><br><span class="line">        <span class="keyword">return</span> result <span class="comment">// 返回结果</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="title function_">set</span>(<span class="params">target, key, val, receiver</span>) &#123;</span><br><span class="line">        <span class="comment">// 重复的数据，不处理</span></span><br><span class="line">        <span class="keyword">if</span> (val === target[key]) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">const</span> result = <span class="title class_">Reflect</span>.<span class="title function_">set</span>(target, key, val, receiver)</span><br><span class="line">        <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;set&#x27;</span>, key, val)</span><br><span class="line">        <span class="comment">// console.log(&#x27;result&#x27;, result) // true</span></span><br><span class="line">        <span class="keyword">return</span> result <span class="comment">// 是否设置成功</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="title function_">deleteProperty</span>(<span class="params">target, key</span>) &#123;</span><br><span class="line">        <span class="keyword">const</span> result = <span class="title class_">Reflect</span>.<span class="title function_">deleteProperty</span>(target, key)</span><br><span class="line">        <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;delete property&#x27;</span>, key)</span><br><span class="line">        <span class="comment">// console.log(&#x27;result&#x27;, result) // true</span></span><br><span class="line">        <span class="keyword">return</span> result <span class="comment">// 是否删除成功</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
-
-<p><strong>Reflect作用</strong>：</p>
-<ul>
-<li>和proxy能力一一对应</li>
-<li>规范化，标准化，函数式</li>
-<li>代替Object上的工具函数</li>
-</ul>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> obj = &#123;<span class="attr">a</span>: <span class="number">100</span>, <span class="attr">b</span>: <span class="number">200</span>&#125;</span><br><span class="line"></span><br><span class="line"><span class="string">&#x27;a&#x27;</span> <span class="keyword">in</span> obj        <span class="comment">//true</span></span><br><span class="line"><span class="title class_">Reflect</span>.<span class="title function_">has</span>(obj,<span class="string">&#x27;a&#x27;</span>)       <span class="comment">//true</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">delete</span> obj.<span class="property">a</span>      <span class="comment">//true</span></span><br><span class="line"><span class="title class_">Reflect</span>.<span class="title function_">deleteProperty</span>(obj,<span class="string">&#x27;a&#x27;</span>)       <span class="comment">//true</span></span><br><span class="line"></span><br><span class="line"><span class="title class_">Object</span>.<span class="title function_">getOwnPropertyNames</span>(obj)       <span class="comment">//[&quot;a&quot;,&quot;b&quot;]</span></span><br><span class="line"><span class="title class_">Reflect</span>.<span class="title function_">owbKeys</span>(obj)          <span class="comment">//[&quot;a&quot;,&quot;b&quot;]</span></span><br></pre></td></tr></table></figure>
-
-<p><strong>proxy创建响应式</strong></p>
-<p><code>Proxy</code>只会代理对象的第一层，那么<code>Vue3</code>又是怎样处理这个问题的呢？</p>
-<blockquote>
-<p>判断当前<code>Reflect.get的</code>返回值是否为<code>Object</code>，如果是则再通过<code>reactive</code>方法做代理， 这样就实现了深度观测。</p>
-</blockquote>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 创建响应式</span></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">reactive</span>(<span class="params">target = &#123;&#125;</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">typeof</span> target !== <span class="string">&#x27;object&#x27;</span> || target == <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="comment">// 不是对象或数组，则返回</span></span><br><span class="line">        <span class="keyword">return</span> target</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 代理配置</span></span><br><span class="line">    <span class="keyword">const</span> proxyConf = &#123;</span><br><span class="line">        <span class="title function_">get</span>(<span class="params">target, key, receiver</span>) &#123;</span><br><span class="line">            <span class="comment">// 只处理本身（非原型的）属性</span></span><br><span class="line">            <span class="keyword">const</span> ownKeys = <span class="title class_">Reflect</span>.<span class="title function_">ownKeys</span>(target)</span><br><span class="line">            <span class="keyword">if</span> (ownKeys.<span class="title function_">includes</span>(key)) &#123;</span><br><span class="line">                <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;get&#x27;</span>, key) <span class="comment">// 监听</span></span><br><span class="line">            &#125;</span><br><span class="line">    </span><br><span class="line">            <span class="keyword">const</span> result = <span class="title class_">Reflect</span>.<span class="title function_">get</span>(target, key, receiver)</span><br><span class="line">        </span><br><span class="line">            <span class="comment">// 深度监听</span></span><br><span class="line">            <span class="comment">// 性能如何提升的？</span></span><br><span class="line">            <span class="keyword">return</span> <span class="title function_">reactive</span>(result)</span><br><span class="line">        &#125;,</span><br><span class="line">        <span class="title function_">set</span>(<span class="params">target, key, val, receiver</span>) &#123;</span><br><span class="line">            <span class="comment">// 重复的数据，不处理</span></span><br><span class="line">            <span class="keyword">if</span> (val === target[key]) &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">            &#125;</span><br><span class="line">    </span><br><span class="line">            <span class="keyword">const</span> ownKeys = <span class="title class_">Reflect</span>.<span class="title function_">ownKeys</span>(target)</span><br><span class="line">            <span class="keyword">if</span> (ownKeys.<span class="title function_">includes</span>(key)) &#123;</span><br><span class="line">                <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;已有的 key&#x27;</span>, key)</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;新增的 key&#x27;</span>, key)</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">const</span> result = <span class="title class_">Reflect</span>.<span class="title function_">set</span>(target, key, val, receiver)</span><br><span class="line">            <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;set&#x27;</span>, key, val)</span><br><span class="line">            <span class="comment">// console.log(&#x27;result&#x27;, result) // true</span></span><br><span class="line">            <span class="keyword">return</span> result <span class="comment">// 是否设置成功</span></span><br><span class="line">        &#125;,</span><br><span class="line">        <span class="title function_">deleteProperty</span>(<span class="params">target, key</span>) &#123;</span><br><span class="line">            <span class="keyword">const</span> result = <span class="title class_">Reflect</span>.<span class="title function_">deleteProperty</span>(target, key)</span><br><span class="line">            <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;delete property&#x27;</span>, key)</span><br><span class="line">            <span class="comment">// console.log(&#x27;result&#x27;, result) // true</span></span><br><span class="line">            <span class="keyword">return</span> result <span class="comment">// 是否删除成功</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 生成代理对象</span></span><br><span class="line">    <span class="keyword">const</span> observed = <span class="keyword">new</span> <span class="title class_">Proxy</span>(target, proxyConf)</span><br><span class="line">    <span class="keyword">return</span> observed</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 测试数据</span></span><br><span class="line"><span class="keyword">const</span> data = &#123;</span><br><span class="line">    <span class="attr">name</span>: <span class="string">&#x27;zhangsan&#x27;</span>,</span><br><span class="line">    <span class="attr">age</span>: <span class="number">20</span>,</span><br><span class="line">    <span class="attr">info</span>: &#123;</span><br><span class="line">        <span class="attr">city</span>: <span class="string">&#x27;beijing&#x27;</span>,</span><br><span class="line">        <span class="attr">a</span>: &#123;</span><br><span class="line">            <span class="attr">b</span>: &#123;</span><br><span class="line">                <span class="attr">c</span>: &#123;</span><br><span class="line">                    <span class="attr">d</span>: &#123;</span><br><span class="line">                        <span class="attr">e</span>: <span class="number">100</span></span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> proxyData = <span class="title function_">reactive</span>(data)</span><br></pre></td></tr></table></figure>
-
-<p><strong>Proxy 相比于 defineProperty 的优势</strong></p>
-<ul>
-<li>数组变化也能监听到</li>
-<li>不需要深度遍历监听</li>
-</ul>
-
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2022/05/25/vue%E5%93%8D%E5%BA%94%E5%BC%8F%E5%8E%9F%E7%90%86/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
     <article id="post-hello-world" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -320,6 +198,128 @@
       
         <p class="article-more-link">
           <a class="article-more-a" href="/2022/05/25/hello-world/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
+    <article id="post-vue响应式原理" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2019/05/25/vue%E5%93%8D%E5%BA%94%E5%BC%8F%E5%8E%9F%E7%90%86/">vue响应式原理</a>
+    </h1>
+  
+
+        
+        <a href="/2019/05/25/vue%E5%93%8D%E5%BA%94%E5%BC%8F%E5%8E%9F%E7%90%86/" class="archive-article-date">
+  	<time datetime="2019-05-25T09:28:36.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-05-25</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="数据驱动"><a href="#数据驱动" class="headerlink" title="数据驱动"></a>数据驱动</h2><ul>
+<li>数据响应式、双向绑定、数据驱动</li>
+<li>数据响应式<ul>
+<li>数据模型仅仅是普通的 <code>JavaScript</code> 对象，而当我们修改数据时，视图会进行更新，避免了繁琐的 <code>DOM</code> 操作提高开发效率</li>
+</ul>
+</li>
+<li>双向绑定<ul>
+<li>数据改变，视图改变;视图改变，数据也随之改变</li>
+<li>我们可以使用 <code>v-model</code> 在表单元素上创建双向数据绑定</li>
+</ul>
+</li>
+<li>数据驱动是<code>Vue</code>最独特的特性之一，MVVM<code>表示的是</code>Model-View-<code>ViewModel</code><ul>
+<li>开发过程中仅需要关注数据本身，不需要关心数据是如何渲染到视图</li>
+<li>Model：模型层，负责处理业务逻辑以及和服务器端进行交互</li>
+<li>View：视图层：负责将数据模型转化为UI展示出来，可以简单的理解为HTML页面</li>
+<li><code>ViewModel</code>：视图模型层，用来连接Model和View，是Model和View之间的通信桥梁</li>
+</ul>
+</li>
+</ul>
+<h2 id="数据响应式的核心原理"><a href="#数据响应式的核心原理" class="headerlink" title="数据响应式的核心原理"></a>数据响应式的核心原理</h2><h3 id="Vue-2-x"><a href="#Vue-2-x" class="headerlink" title="Vue 2.x"></a>Vue 2.x</h3><blockquote>
+<p>核心是通过 ES5 的保护对象的 <code>Object.defindeProperty</code> 中的访问器属性中的 get 和 set 方法，data 中声明的属性都被添加了访问器属性，当读取 data 中的数据时自动调用 get 方法，当修改 data 中的数据时，自动调用 set 方法，检测到数据的变化，会通知观察者 Wacher，观察者 Wacher自动触发重新render 当前组件（子组件不会重新渲染）,生成新的虚拟 DOM 树，Vue 框架会遍历并对比新虚拟 DOM 树和旧虚拟 DOM 树中每个节点的差别，并记录下来，最后，加载操作，将所有记录的不同点，局部修改到真实 DOM树上</p>
+</blockquote>
+<p> <img src="/./vue%E5%93%8D%E5%BA%94%E5%BC%8F%E5%8E%9F%E7%90%86/15.png"></p>
+<blockquote>
+<p>总结：Vue 采用数据劫持结合发布—订阅模式的方法，通过 <code>Object.defineProperty()</code> 来劫持各个属性的 setter，getter，在数据变动时发布消息给订阅者，触发相应的监听回调</p>
+</blockquote>
+<p><img src="/./vue%E5%93%8D%E5%BA%94%E5%BC%8F%E5%8E%9F%E7%90%86/vue.jpeg"></p>
+<p><strong>Object.defineProperty()，那么它的用法是什么，以及优缺点是什么呢？</strong></p>
+<ul>
+<li>可以检测对象中数据发生的修改</li>
+<li>对于复杂的对象，层级很深的话，是不友好的，需要经行深度监听，这样子就需要递归到底，这也是它的缺点。</li>
+<li>对于一个对象中，如果你新增加属性，删除属性，Object.defineProperty()是不能观测到的，那么应该如何解决呢？可以通过<code>Vue.set()</code>和<code>Vue.delete()</code>来实现。</li>
+</ul>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 模拟 Vue 中的 data 选项 </span></span><br><span class="line"><span class="keyword">let</span> data = &#123;</span><br><span class="line">    <span class="attr">msg</span>: <span class="string">&#x27;hello&#x27;</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 模拟 Vue 的实例 </span></span><br><span class="line"><span class="keyword">let</span> vm = &#123;&#125;</span><br><span class="line"><span class="comment">// 数据劫持:当访问或者设置 vm 中的成员的时候，做一些干预操作</span></span><br><span class="line"><span class="title class_">Object</span>.<span class="title function_">defineProperty</span>(vm, <span class="string">&#x27;msg&#x27;</span>, &#123;</span><br><span class="line">  <span class="comment">// 可枚举(可遍历)</span></span><br><span class="line">  <span class="attr">enumerable</span>: <span class="literal">true</span>,</span><br><span class="line">  <span class="comment">// 可配置(可以使用 delete 删除，可以通过 defineProperty 重新定义) </span></span><br><span class="line">  <span class="attr">configurable</span>: <span class="literal">true</span>,</span><br><span class="line">  <span class="comment">// 当获取值的时候执行 </span></span><br><span class="line">  get () &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;get: &#x27;</span>, data.<span class="property">msg</span>)</span><br><span class="line">    <span class="keyword">return</span> data.<span class="property">msg</span> </span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="comment">// 当设置值的时候执行 </span></span><br><span class="line">  set (newValue) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;set: &#x27;</span>, newValue) </span><br><span class="line">    <span class="keyword">if</span> (newValue === data.<span class="property">msg</span>) &#123;</span><br><span class="line">      <span class="keyword">return</span></span><br><span class="line">    &#125;</span><br><span class="line">    data.<span class="property">msg</span> = newValue</span><br><span class="line">    <span class="comment">// 数据更改，更新 DOM 的值 </span></span><br><span class="line">    <span class="variable language_">document</span>.<span class="title function_">querySelector</span>(<span class="string">&#x27;#app&#x27;</span>).<span class="property">textContent</span> = data.<span class="property">msg</span></span><br><span class="line">  &#125; </span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 测试</span></span><br><span class="line">vm.<span class="property">msg</span> = <span class="string">&#x27;Hello World&#x27;</span> </span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(vm.<span class="property">msg</span>)</span><br></pre></td></tr></table></figure>
+
+<h3 id="Vue-3-x"><a href="#Vue-3-x" class="headerlink" title="Vue 3.x"></a>Vue 3.x</h3><blockquote>
+<p><code>Vue3.x</code>改用<code>Proxy</code>替代<code>Object.defineProperty</code>。因为<code>Proxy</code>可以直接监听<code>对象和数组</code>的变化，并且有多达13种拦截方法。并且作为新标准将受到浏览器厂商重点持续的性能优化。</p>
+</blockquote>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> data = [<span class="string">&#x27;a&#x27;</span>, <span class="string">&#x27;b&#x27;</span>, <span class="string">&#x27;c&#x27;</span>]</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> proxyData = <span class="keyword">new</span> <span class="title class_">Proxy</span>(data, &#123;</span><br><span class="line">    <span class="title function_">get</span>(<span class="params">target, key, receiver</span>) &#123;</span><br><span class="line">        <span class="comment">// 只处理本身（非原型的）属性</span></span><br><span class="line">        <span class="keyword">const</span> ownKeys = <span class="title class_">Reflect</span>.<span class="title function_">ownKeys</span>(target)</span><br><span class="line">        <span class="keyword">if</span> (ownKeys.<span class="title function_">includes</span>(key)) &#123;</span><br><span class="line">            <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;get&#x27;</span>, key) <span class="comment">// 监听</span></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">const</span> result = <span class="title class_">Reflect</span>.<span class="title function_">get</span>(target, key, receiver)</span><br><span class="line">        <span class="keyword">return</span> result <span class="comment">// 返回结果</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="title function_">set</span>(<span class="params">target, key, val, receiver</span>) &#123;</span><br><span class="line">        <span class="comment">// 重复的数据，不处理</span></span><br><span class="line">        <span class="keyword">if</span> (val === target[key]) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">const</span> result = <span class="title class_">Reflect</span>.<span class="title function_">set</span>(target, key, val, receiver)</span><br><span class="line">        <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;set&#x27;</span>, key, val)</span><br><span class="line">        <span class="comment">// console.log(&#x27;result&#x27;, result) // true</span></span><br><span class="line">        <span class="keyword">return</span> result <span class="comment">// 是否设置成功</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="title function_">deleteProperty</span>(<span class="params">target, key</span>) &#123;</span><br><span class="line">        <span class="keyword">const</span> result = <span class="title class_">Reflect</span>.<span class="title function_">deleteProperty</span>(target, key)</span><br><span class="line">        <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;delete property&#x27;</span>, key)</span><br><span class="line">        <span class="comment">// console.log(&#x27;result&#x27;, result) // true</span></span><br><span class="line">        <span class="keyword">return</span> result <span class="comment">// 是否删除成功</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+
+<p><strong>Reflect作用</strong>：</p>
+<ul>
+<li>和proxy能力一一对应</li>
+<li>规范化，标准化，函数式</li>
+<li>代替Object上的工具函数</li>
+</ul>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> obj = &#123;<span class="attr">a</span>: <span class="number">100</span>, <span class="attr">b</span>: <span class="number">200</span>&#125;</span><br><span class="line"></span><br><span class="line"><span class="string">&#x27;a&#x27;</span> <span class="keyword">in</span> obj        <span class="comment">//true</span></span><br><span class="line"><span class="title class_">Reflect</span>.<span class="title function_">has</span>(obj,<span class="string">&#x27;a&#x27;</span>)       <span class="comment">//true</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">delete</span> obj.<span class="property">a</span>      <span class="comment">//true</span></span><br><span class="line"><span class="title class_">Reflect</span>.<span class="title function_">deleteProperty</span>(obj,<span class="string">&#x27;a&#x27;</span>)       <span class="comment">//true</span></span><br><span class="line"></span><br><span class="line"><span class="title class_">Object</span>.<span class="title function_">getOwnPropertyNames</span>(obj)       <span class="comment">//[&quot;a&quot;,&quot;b&quot;]</span></span><br><span class="line"><span class="title class_">Reflect</span>.<span class="title function_">owbKeys</span>(obj)          <span class="comment">//[&quot;a&quot;,&quot;b&quot;]</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>proxy创建响应式</strong></p>
+<p><code>Proxy</code>只会代理对象的第一层，那么<code>Vue3</code>又是怎样处理这个问题的呢？</p>
+<blockquote>
+<p>判断当前<code>Reflect.get的</code>返回值是否为<code>Object</code>，如果是则再通过<code>reactive</code>方法做代理， 这样就实现了深度观测。</p>
+</blockquote>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 创建响应式</span></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">reactive</span>(<span class="params">target = &#123;&#125;</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">typeof</span> target !== <span class="string">&#x27;object&#x27;</span> || target == <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="comment">// 不是对象或数组，则返回</span></span><br><span class="line">        <span class="keyword">return</span> target</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 代理配置</span></span><br><span class="line">    <span class="keyword">const</span> proxyConf = &#123;</span><br><span class="line">        <span class="title function_">get</span>(<span class="params">target, key, receiver</span>) &#123;</span><br><span class="line">            <span class="comment">// 只处理本身（非原型的）属性</span></span><br><span class="line">            <span class="keyword">const</span> ownKeys = <span class="title class_">Reflect</span>.<span class="title function_">ownKeys</span>(target)</span><br><span class="line">            <span class="keyword">if</span> (ownKeys.<span class="title function_">includes</span>(key)) &#123;</span><br><span class="line">                <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;get&#x27;</span>, key) <span class="comment">// 监听</span></span><br><span class="line">            &#125;</span><br><span class="line">    </span><br><span class="line">            <span class="keyword">const</span> result = <span class="title class_">Reflect</span>.<span class="title function_">get</span>(target, key, receiver)</span><br><span class="line">        </span><br><span class="line">            <span class="comment">// 深度监听</span></span><br><span class="line">            <span class="comment">// 性能如何提升的？</span></span><br><span class="line">            <span class="keyword">return</span> <span class="title function_">reactive</span>(result)</span><br><span class="line">        &#125;,</span><br><span class="line">        <span class="title function_">set</span>(<span class="params">target, key, val, receiver</span>) &#123;</span><br><span class="line">            <span class="comment">// 重复的数据，不处理</span></span><br><span class="line">            <span class="keyword">if</span> (val === target[key]) &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">            &#125;</span><br><span class="line">    </span><br><span class="line">            <span class="keyword">const</span> ownKeys = <span class="title class_">Reflect</span>.<span class="title function_">ownKeys</span>(target)</span><br><span class="line">            <span class="keyword">if</span> (ownKeys.<span class="title function_">includes</span>(key)) &#123;</span><br><span class="line">                <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;已有的 key&#x27;</span>, key)</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;新增的 key&#x27;</span>, key)</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">const</span> result = <span class="title class_">Reflect</span>.<span class="title function_">set</span>(target, key, val, receiver)</span><br><span class="line">            <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;set&#x27;</span>, key, val)</span><br><span class="line">            <span class="comment">// console.log(&#x27;result&#x27;, result) // true</span></span><br><span class="line">            <span class="keyword">return</span> result <span class="comment">// 是否设置成功</span></span><br><span class="line">        &#125;,</span><br><span class="line">        <span class="title function_">deleteProperty</span>(<span class="params">target, key</span>) &#123;</span><br><span class="line">            <span class="keyword">const</span> result = <span class="title class_">Reflect</span>.<span class="title function_">deleteProperty</span>(target, key)</span><br><span class="line">            <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;delete property&#x27;</span>, key)</span><br><span class="line">            <span class="comment">// console.log(&#x27;result&#x27;, result) // true</span></span><br><span class="line">            <span class="keyword">return</span> result <span class="comment">// 是否删除成功</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 生成代理对象</span></span><br><span class="line">    <span class="keyword">const</span> observed = <span class="keyword">new</span> <span class="title class_">Proxy</span>(target, proxyConf)</span><br><span class="line">    <span class="keyword">return</span> observed</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 测试数据</span></span><br><span class="line"><span class="keyword">const</span> data = &#123;</span><br><span class="line">    <span class="attr">name</span>: <span class="string">&#x27;zhangsan&#x27;</span>,</span><br><span class="line">    <span class="attr">age</span>: <span class="number">20</span>,</span><br><span class="line">    <span class="attr">info</span>: &#123;</span><br><span class="line">        <span class="attr">city</span>: <span class="string">&#x27;beijing&#x27;</span>,</span><br><span class="line">        <span class="attr">a</span>: &#123;</span><br><span class="line">            <span class="attr">b</span>: &#123;</span><br><span class="line">                <span class="attr">c</span>: &#123;</span><br><span class="line">                    <span class="attr">d</span>: &#123;</span><br><span class="line">                        <span class="attr">e</span>: <span class="number">100</span></span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> proxyData = <span class="title function_">reactive</span>(data)</span><br></pre></td></tr></table></figure>
+
+<p><strong>Proxy 相比于 defineProperty 的优势</strong></p>
+<ul>
+<li>数组变化也能监听到</li>
+<li>不需要深度遍历监听</li>
+</ul>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2019/05/25/vue%E5%93%8D%E5%BA%94%E5%BC%8F%E5%8E%9F%E7%90%86/">展开全文 >></a>
         </p>
       
 
