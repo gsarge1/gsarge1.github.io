@@ -15,13 +15,13 @@
 <meta property="og:site_name" content="Hexo">
 <meta property="og:description" content="数据驱动 数据响应式、双向绑定、数据驱动 数据响应式 数据模型仅仅是普通的 JavaScript 对象，而当我们修改数据时，视图会进行更新，避免了繁琐的 DOM 操作提高开发效率   双向绑定 数据改变，视图改变;视图改变，数据也随之改变 我们可以使用 v-model 在表单元素上创建双向数据绑定   数据驱动是Vue最独特的特性之一，MVVM表示的是Model-View-ViewModel 开发">
 <meta property="og:locale">
-<meta property="og:image" content="http://example.com/.com//15.png">
-<meta property="og:image" content="http://example.com/.com//vue.jpeg">
-<meta property="article:published_time" content="2022-05-25T09:28:36.000Z">
-<meta property="article:modified_time" content="2022-05-25T10:37:30.333Z">
+<meta property="og:image" content="http://example.com/2022/05/25/vue%E5%93%8D%E5%BA%94%E5%BC%8F%E5%8E%9F%E7%90%86/Users/解瑞恒/Desktop/vue响应式原理/15.png">
+<meta property="og:image" content="http://example.com/2022/05/25/vue%E5%93%8D%E5%BA%94%E5%BC%8F%E5%8E%9F%E7%90%86/Users/解瑞恒/Desktop/vue响应式原理/vue.jpeg">
+<meta property="article:published_time" content="2022-05-25T11:04:30.000Z">
+<meta property="article:modified_time" content="2022-05-25T11:05:36.066Z">
 <meta property="article:author" content="John Doe">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://example.com/.com//15.png">
+<meta name="twitter:image" content="http://example.com/2022/05/25/vue%E5%93%8D%E5%BA%94%E5%BC%8F%E5%8E%9F%E7%90%86/Users/解瑞恒/Desktop/vue响应式原理/15.png">
   
     <link rel="alternative" href="/atom.xml" title="Hexo" type="application/atom+xml">
   
@@ -170,7 +170,7 @@
 
         
         <a href="/2022/05/25/vue%E5%93%8D%E5%BA%94%E5%BC%8F%E5%8E%9F%E7%90%86/" class="archive-article-date">
-  	<time datetime="2022-05-25T09:28:36.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-05-25</time>
+  	<time datetime="2022-05-25T11:04:30.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-05-25</time>
 </a>
         
       </header>
@@ -199,11 +199,11 @@
 <h2 id="数据响应式的核心原理"><a href="#数据响应式的核心原理" class="headerlink" title="数据响应式的核心原理"></a>数据响应式的核心原理</h2><h3 id="Vue-2-x"><a href="#Vue-2-x" class="headerlink" title="Vue 2.x"></a>Vue 2.x</h3><blockquote>
 <p>核心是通过 ES5 的保护对象的 <code>Object.defindeProperty</code> 中的访问器属性中的 get 和 set 方法，data 中声明的属性都被添加了访问器属性，当读取 data 中的数据时自动调用 get 方法，当修改 data 中的数据时，自动调用 set 方法，检测到数据的变化，会通知观察者 Wacher，观察者 Wacher自动触发重新render 当前组件（子组件不会重新渲染）,生成新的虚拟 DOM 树，Vue 框架会遍历并对比新虚拟 DOM 树和旧虚拟 DOM 树中每个节点的差别，并记录下来，最后，加载操作，将所有记录的不同点，局部修改到真实 DOM树上</p>
 </blockquote>
-<p> <img src="/.com//15.png"></p>
+<p> <img src="/2022/05/25/vue%E5%93%8D%E5%BA%94%E5%BC%8F%E5%8E%9F%E7%90%86/Users/解瑞恒/Desktop/vue响应式原理/15.png"></p>
 <blockquote>
 <p>总结：Vue 采用数据劫持结合发布—订阅模式的方法，通过 <code>Object.defineProperty()</code> 来劫持各个属性的 setter，getter，在数据变动时发布消息给订阅者，触发相应的监听回调</p>
 </blockquote>
-<p><img src="/.com//vue.jpeg"></p>
+<p><img src="/2022/05/25/vue%E5%93%8D%E5%BA%94%E5%BC%8F%E5%8E%9F%E7%90%86/Users/解瑞恒/Desktop/vue响应式原理/vue.jpeg"></p>
 <p><strong>Object.defineProperty()，那么它的用法是什么，以及优缺点是什么呢？</strong></p>
 <ul>
 <li>可以检测对象中数据发生的修改</li>
